@@ -1,0 +1,12 @@
+M&F Panel — original archived source
+===================================
+
+File:  main/index.js
+Bytes: 284512
+SHA256: 17627aa1b6b12b3401771a1839d4bd1cb98afff22f0feae798be83a9edfa562a
+Version marker inside the file: mf-panel-katabump-1.1
+First bytes: "use strict"; // Katabump entry for M&F PANEL (vpn-ui v1.9.4)
+
+This file is stored exactly as received. It is not used by the current
+runner and must not be installed on Katabump: the active release lives in
+the repository root (index.js + package.json).
