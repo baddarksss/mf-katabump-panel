@@ -1,0 +1,15 @@
+{
+  "name": "mf-panel",
+  "version": "2.1.0",
+  "private": true,
+  "description": "Katabump non-root runner with native client subscriptions and a token-authenticated node adapter.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node updater.test.cjs && node gateway.test.js && node -e \"process.env.SELFTEST='1';require('./index.js')\"",
+    "release": "node release.cjs"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
