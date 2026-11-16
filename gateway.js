@@ -182,6 +182,11 @@ module.exports = function createGateway(deps) {
       sameOrigin(req);
       const input = await body(req);
       if (url.pathname === '/mf/update/stage') return json(res, 200, { success: true, ...await updater.stage() });
+      if (url.pathname === '/mf/update/apply') {
+        const result=updater.apply();
+        setTimeout(() => process.kill(process.pid, 'SIGTERM'), 250).unref();
+        return json(res, 200, { success: true, ...result });
+      }
       if (url.pathname === '/mf/configure') return json(res, 200, { success: true, ...await configure(cookie, input.origin) });
       if (url.pathname === '/mf/node') {
         const cfg = load(); cfg.enabled = input.enabled === true;

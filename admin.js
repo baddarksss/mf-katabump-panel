@@ -24,7 +24,11 @@
       const release = await request('update/check');
       if (!release.available) { result.textContent = 'نسخهٔ فعلی به‌روز است.'; return; }
       const staged = await request('update/stage', {});
-      result.textContent = staged.message || 'نسخه آماده شد.';
+      if (!staged.staged) { result.textContent = 'نسخهٔ فعلی به‌روز است.'; return; }
+      if (confirm('نسخه بررسی شد. پنل برای اعمال آپدیت ری‌استارت می‌شود؛ اطلاعات کلاینت‌ها حفظ می‌شوند. ادامه؟')) {
+        const applied = await request('update/apply', {});
+        result.textContent = applied.message;
+      } else result.textContent = 'نسخه دریافت و آماده شد؛ هنوز اعمال نشد.';
     }); };
     // Capture the stock update action before Vue invokes the binary updater.
     document.addEventListener('click', event => {

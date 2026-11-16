@@ -59,5 +59,39 @@ module.exports = function updater(root = __dirname, fetch = get) {
       return {version:release.version,commit:release.commit,staged:true,restartRequired:true,message:'نسخه دریافت و بررسی شد؛ برای حفظ اتصال‌های فعال هنوز اعمال نشده است.'};
     } finally {if(temp)fs.rmSync(temp,{recursive:true,force:true});busy=false;}
   }
-  return {check,stage};
+  function stagedRelease() {
+    const parent=path.join(root,'.mf-updates');
+    if(!fs.existsSync(parent)) throw Error('ابتدا Check for update را اجرا کنید');
+    const releases=fs.readdirSync(parent,{withFileTypes:true}).filter(x=>x.isDirectory()&&x.name!=='download').map(x=>x.name);
+    if(!releases.length) throw Error('نسخهٔ آماده‌ای وجود ندارد');
+    releases.sort();
+    const dir=path.join(parent,releases[releases.length-1]);
+    const release=JSON.parse(fs.readFileSync(path.join(dir,'release.json'),'utf8'));
+    return {dir,release};
+  }
+  function apply() {
+    if(busy) throw Error('آپدیت دیگری در حال اجراست');
+    busy=true;
+    try {
+      const {dir,release}=stagedRelease();
+      for(const name of FILES) {
+        const source=path.join(dir,name);
+        if(!fs.existsSync(source)||crypto.createHash('sha256').update(fs.readFileSync(source)).digest('hex')!==release.files[name]) throw Error('فایل آماده معتبر نیست: '+name);
+      }
+      const backup=path.join(root,'.mf-updates','backup-'+Date.now());
+      fs.mkdirSync(backup,{recursive:true});
+      for(const name of FILES) {
+        const target=path.join(root,name);
+        if(fs.existsSync(target)) fs.copyFileSync(target,path.join(backup,name));
+      }
+      for(const name of FILES) {
+        const tmp=path.join(root,'.mf-updates','.'+name+'.tmp');
+        fs.copyFileSync(path.join(dir,name),tmp);
+        fs.renameSync(tmp,path.join(root,name));
+      }
+      fs.writeFileSync(path.join(root,'.mf-updates','last-apply.json'),JSON.stringify({version:release.version,commit:release.commit,backup},null,2));
+      return {applied:true,version:release.version,commit:release.commit,backup,restartRequired:true,message:'آپدیت نصب شد؛ پنل برای اجرای نسخهٔ جدید ری‌استارت می‌شود.'};
+    } finally {busy=false;}
+  }
+  return {check,stage,apply};
 };
