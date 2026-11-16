@@ -43,6 +43,21 @@ module.exports = function createGateway(deps) {
     if (result.status !== 200 || !parsed.success) throw Error(parsed.msg || 'درخواست پنل رد شد');
     return parsed.obj;
   }
+  async function xrayVersions(cookie) {
+    const result = await panelRequest('GET', BASE + '/panel/api/server/getXrayVersion', { cookie });
+    let parsed;
+    try { parsed = JSON.parse(result.body); } catch { throw Error('پاسخ نسخه‌های Xray معتبر نیست'); }
+    if (result.status !== 200 || !parsed.success) throw Error(parsed.msg || 'دریافت نسخه‌های Xray ناموفق بود');
+    return parsed.obj;
+  }
+  async function installXray(cookie, version) {
+    if (!/^[0-9A-Za-z][0-9A-Za-z._+-]{0,63}$/.test(String(version || ''))) throw Error('نسخه Xray معتبر نیست');
+    const result = await panelRequest('POST', BASE + '/panel/api/server/installXray/' + encodeURIComponent(version), { cookie, body: '' });
+    let parsed;
+    try { parsed = JSON.parse(result.body); } catch { throw Error('پاسخ نصب Xray معتبر نیست'); }
+    if (result.status !== 200 || !parsed.success) throw Error(parsed.msg || 'نصب Xray ناموفق بود');
+    return parsed.obj;
+  }
   async function configureNow(cookie, publicOrigin) {
     const current = await api(cookie, 'POST', '/panel/setting/all', {});
     const external = publicOrigin ? origin(publicOrigin) : load().origin || process.env.PUBLIC_URL && origin(process.env.PUBLIC_URL);
@@ -177,6 +192,11 @@ module.exports = function createGateway(deps) {
     if (url.pathname.startsWith('/mf/')) {
       const cookie = await admin(req);
       if (req.method === 'GET' && url.pathname === '/mf/update/check') return json(res, 200, { success: true, ...await updater.check() });
+      if (req.method === 'GET' && url.pathname === '/mf/xray/versions') return json(res, 200, { success: true, versions: await xrayVersions(cookie) });
+      if (req.method === 'GET' && url.pathname === '/mf/xray/status') {
+        const status = await api(cookie, 'GET', '/panel/api/server/status');
+        return json(res, 200, { success: true, status });
+      }
       if (req.method === 'GET' && url.pathname === '/mf/status') return json(res, 200, { success: true, origin: load().origin || '', nodeEnabled: !!load().enabled, nodeBasePath: '/node/', compatibility: 'Inbound API + client CRUD adapter; global traffic aggregation is not supported' });
       if (req.method !== 'POST') return json(res, 404, { success: false });
       sameOrigin(req);
@@ -186,6 +206,10 @@ module.exports = function createGateway(deps) {
         const result=updater.apply();
         setTimeout(() => process.kill(process.pid, 'SIGTERM'), 250).unref();
         return json(res, 200, { success: true, ...result });
+      }
+      if (url.pathname === '/mf/xray/install') {
+        if (!input.version) throw Error('نسخه Xray را انتخاب کنید');
+        return json(res, 200, { success: true, installed: await installXray(cookie, input.version), message: 'Xray به‌روزرسانی شد؛ کلاینت‌ها و لینک‌های قبلی حفظ شدند.' });
       }
       if (url.pathname === '/mf/configure') return json(res, 200, { success: true, ...await configure(cookie, input.origin) });
       if (url.pathname === '/mf/node') {

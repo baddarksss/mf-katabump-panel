@@ -5,9 +5,12 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 const FILES = ['index.js','gateway.js','admin.js','updater.js','package.json'];
-function get(url) {
+function get(url, options = {}) {
   return new Promise((resolve,reject) => {
-    const req = https.get(url, {headers:{'User-Agent':'MF-Katabump-Updater','Accept':'application/vnd.github+json'},timeout:20000},res=>{
+    const token = String(process.env.GITHUB_TOKEN || '').trim();
+    const headers = {'User-Agent':'MF-Katabump-Updater','Accept':'application/vnd.github+json'};
+    if (token) headers.Authorization = 'Bearer ' + token;
+    const req = https.get(url, {headers,timeout:20000},res=>{
       if(res.statusCode!==200) {res.resume();return reject(Error('GitHub HTTP '+res.statusCode));}
       let size=0;const chunks=[];
       res.on('data',c=>{size+=c.length;if(size>2*1024*1024)res.destroy(Error('Download too large'));else chunks.push(c);});
@@ -25,7 +28,7 @@ module.exports = function updater(root = __dirname, fetch = get) {
   }
   async function check() {
     const repo=repository();
-    const commit=JSON.parse((await fetch('https://api.github.com/repos/'+repo+'/commits/main')).toString());
+      const commit=JSON.parse((await fetch('https://api.github.com/repos/'+repo+'/commits/main')).toString());
     if(!/^[a-f0-9]{40}$/.test(commit.sha||''))throw Error('Invalid commit');
     const manifest=JSON.parse((await fetch('https://raw.githubusercontent.com/'+repo+'/'+commit.sha+'/update-manifest.json')).toString());
     if(!manifest.version || !manifest.files || FILES.some(name=>! /^[a-f0-9]{64}$/.test(manifest.files[name]||'')))throw Error('Invalid release manifest');

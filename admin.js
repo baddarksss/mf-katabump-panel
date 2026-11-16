@@ -30,6 +30,18 @@
         result.textContent = applied.message;
       } else result.textContent = 'نسخه دریافت و آماده شد؛ هنوز اعمال نشد.';
     }); };
+    const xray = document.createElement('button');
+    xray.textContent = 'Update Xray';
+    box.appendChild(xray);
+    xray.onclick = function () { run(this, async () => {
+      const versions = await request('xray/versions');
+      const list = Array.isArray(versions.versions) ? versions.versions : (versions.versions?.versions || versions.versions?.obj || []);
+      const current = (await request('xray/status')).status || {};
+      const selected = prompt('نسخه Xray را وارد کنید. نسخه فعلی: ' + (current.xrayVersion || current.version || 'نامشخص') + '\nنسخه‌های قابل نصب: ' + list.join(', '), list[list.length - 1] || '');
+      if (!selected) return;
+      const resultXray = await request('xray/install', { version: selected });
+      result.textContent = resultXray.message;
+    }); };
     // Capture the stock update action before Vue invokes the binary updater.
     document.addEventListener('click', event => {
       const target = event.target.closest('button,a,[role="menuitem"]');

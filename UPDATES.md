@@ -1,6 +1,10 @@
-# GitHub updates — 2.1.0
+# GitHub updates — 2.2.0
 
 Repository: https://github.com/baddarksss/mf-katabump-panel
+
+برای ریپوی خصوصی، `GITHUB_TOKEN` را در Environment Variables سرویس تنظیم کنید. آپدیتر آن را به API GitHub و `raw.githubusercontent.com` می‌فرستد و مقدارش را در فایل یا لاگ نمی‌نویسد.
+
+دکمهٔ `Update Xray` نسخه‌های Xray را از API داخلی vpn-ui می‌گیرد و از `installXray/:version` نصب می‌کند. این کار کلاینت‌ها، Sub IDها و دیتابیس داخل `vpn/` را تغییر نمی‌دهد.
 
 ## انتشار نسخه
 

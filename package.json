@@ -1,6 +1,6 @@
 {
   "name": "mf-panel",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "description": "Katabump non-root runner with native client subscriptions and a token-authenticated node adapter.",
   "main": "index.js",

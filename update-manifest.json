@@ -1,10 +1,10 @@
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "files": {
     "index.js": "b5d10a2a4a490995fd2bb0692928d19b9b3b983318e92906eedc8c6dcfae62cc",
-    "gateway.js": "4e8071a655d0f29302e3338df63b953ab1981863a8f73374cef761d4e7813b99",
-    "admin.js": "fdd2f901efb09f6ee1de9a84ab3f58357d2f0365e4540162e3105aca31d0b57f",
-    "updater.js": "647f9dc21eee23e60f15b1093db5888e30a515cdd1cc22b430227365dfff04f3",
-    "package.json": "788fc6730312b1d42a6f7283c045d17e9d753d41ee85f2165125a6077810a2f0"
+    "gateway.js": "588ab1117a118eec9fdf6ee6f6b7b70e2b4ff6647f7a7736a3006d31803b5ed5",
+    "admin.js": "4feb5c5456fccddd888b0181e935d049290f0a142d34c23602c8716bd8ace06e",
+    "updater.js": "74763ebf98fec1077dd40fe9e48808d168e2bdbfd3497e35060084526046dcb5",
+    "package.json": "14781a05f5fba3cc71f360dde1603b04f66ef9fd5fde74729401f50272d799a2"
   }
 }
