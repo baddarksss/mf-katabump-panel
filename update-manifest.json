@@ -1,10 +1,10 @@
 {
-  "version": "2.2.0",
+  "version": "2.3.0",
   "files": {
-    "index.js": "b5d10a2a4a490995fd2bb0692928d19b9b3b983318e92906eedc8c6dcfae62cc",
-    "gateway.js": "588ab1117a118eec9fdf6ee6f6b7b70e2b4ff6647f7a7736a3006d31803b5ed5",
-    "admin.js": "4feb5c5456fccddd888b0181e935d049290f0a142d34c23602c8716bd8ace06e",
-    "updater.js": "74763ebf98fec1077dd40fe9e48808d168e2bdbfd3497e35060084526046dcb5",
-    "package.json": "14781a05f5fba3cc71f360dde1603b04f66ef9fd5fde74729401f50272d799a2"
+    "index.js": "0809b9822d7c46ddb12424dff5d66c4bd14a26ce048bbfbbd1a1baa00bda0d06",
+    "package.json": "c146605d23bc0a0ff3a31aa58d18d245d3df9efac47416cba409690171322f8b",
+    "gateway.js": "d19643d91fdced4f71472a15460773c51611c151280c81837280d360f29bb644",
+    "admin.js": "1c1472a974c599e2c54efef08995d18da217adead5fcac9f7ce8bb81624444a9",
+    "updater.js": "7914fb006b916662850470c304a579eea270f82f50e52f11a2862fcbd6ec247f"
   }
 }

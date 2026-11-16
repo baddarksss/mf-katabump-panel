@@ -10,11 +10,14 @@ const fs=require('fs'),os=require('os'),path=require('path'),crypto=require('cry
    files[name]=crypto.createHash('sha256').update(contents[name]).digest('hex');
    fs.writeFileSync(path.join(root,name),name==='package.json'?'{}':'original');
   }
-  const fetch=async url=>url.endsWith('/commits/main')?Buffer.from(JSON.stringify({sha:'a'.repeat(40)})):url.endsWith('update-manifest.json')?Buffer.from(JSON.stringify({version:'2.1.0',files})):contents[url.split('/').pop()];
+  const fetch=async url=>url.endsWith('/commits/main')?Buffer.from(JSON.stringify({sha:'a'.repeat(40)})):url.includes('update-manifest.json')?Buffer.from(JSON.stringify({version:'2.1.0',files})):contents[url.split('/').pop().split('?')[0]];
   const updater=require('./updater')(root,fetch);
   assert((await updater.stage()).staged);
   assert.equal(fs.readFileSync(path.join(root,'vpn','clients.db'),'utf8'),'active-clients');
   assert.equal(fs.readFileSync(path.join(root,'index.js'),'utf8'),'original');
+  assert(updater.apply().applied);
+  assert.equal(fs.readFileSync(path.join(root,'vpn','clients.db'),'utf8'),'active-clients');
+  fs.writeFileSync(path.join(root,'index.js'),'original');
   contents['index.js']=Buffer.from('tampered');
   await assert.rejects(updater.stage(),/Checksum/);
   assert.equal(fs.readFileSync(path.join(root,'index.js'),'utf8'),'original');

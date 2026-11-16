@@ -4,11 +4,13 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
-const FILES = ['index.js','gateway.js','admin.js','updater.js','package.json'];
-function get(url, options = {}) {
+const FILES = ['index.js','package.json'];
+function get(url) {
   return new Promise((resolve,reject) => {
     const token = String(process.env.GITHUB_TOKEN || '').trim();
-    const headers = {'User-Agent':'MF-Katabump-Updater','Accept':'application/vnd.github+json'};
+    const parsed = new URL(url);
+    if(parsed.protocol!=='https:' || parsed.hostname!=='api.github.com')return reject(Error('Invalid GitHub endpoint'));
+    const headers = {'User-Agent':'MF-Katabump-Updater','Accept':parsed.pathname.includes('/contents/')?'application/vnd.github.raw+json':'application/vnd.github+json'};
     if (token) headers.Authorization = 'Bearer ' + token;
     const req = https.get(url, {headers,timeout:20000},res=>{
       if(res.statusCode!==200) {res.resume();return reject(Error('GitHub HTTP '+res.statusCode));}
@@ -22,7 +24,7 @@ function get(url, options = {}) {
 module.exports = function updater(root = __dirname, fetch = get) {
   let busy=false;
   function repository() {
-    const config=JSON.parse(fs.readFileSync(path.join(root,'update-source.json'),'utf8'));
+    const config={repository:process.env.GITHUB_REPOSITORY || JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8')).updateRepository || 'baddarksss/mf-katabump-panel'};
     if(!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(config.repository||''))throw Error('ریپوی GitHub هنوز تنظیم نشده است');
     return config.repository;
   }
@@ -30,7 +32,7 @@ module.exports = function updater(root = __dirname, fetch = get) {
     const repo=repository();
       const commit=JSON.parse((await fetch('https://api.github.com/repos/'+repo+'/commits/main')).toString());
     if(!/^[a-f0-9]{40}$/.test(commit.sha||''))throw Error('Invalid commit');
-    const manifest=JSON.parse((await fetch('https://raw.githubusercontent.com/'+repo+'/'+commit.sha+'/update-manifest.json')).toString());
+    const manifest=JSON.parse((await fetch('https://api.github.com/repos/'+repo+'/contents/update-manifest.json?ref='+commit.sha)).toString());
     if(!manifest.version || !manifest.files || FILES.some(name=>! /^[a-f0-9]{64}$/.test(manifest.files[name]||'')))throw Error('Invalid release manifest');
     const available=FILES.some(name=>!fs.existsSync(path.join(root,name))||crypto.createHash('sha256').update(fs.readFileSync(path.join(root,name))).digest('hex')!==manifest.files[name]);
     return {repository:repo,commit:commit.sha,version:manifest.version,available,files:manifest.files};
@@ -44,7 +46,7 @@ module.exports = function updater(root = __dirname, fetch = get) {
       const parent=path.join(root,'.mf-updates');fs.mkdirSync(parent,{recursive:true});
       temp=fs.mkdtempSync(path.join(parent,'download-'));
       for(const name of FILES) {
-        const data=await fetch('https://raw.githubusercontent.com/'+release.repository+'/'+release.commit+'/'+name);
+        const data=await fetch('https://api.github.com/repos/'+release.repository+'/contents/'+name+'?ref='+release.commit);
         if(crypto.createHash('sha256').update(data).digest('hex')!==release.files[name])throw Error('Checksum mismatch: '+name);
         fs.writeFileSync(path.join(temp,name),data);
         if(name.endsWith('.js')) {
@@ -57,6 +59,7 @@ module.exports = function updater(root = __dirname, fetch = get) {
       const destination=path.join(parent,release.commit);
       if(fs.existsSync(destination))fs.rmSync(destination,{recursive:true});
       fs.renameSync(temp,destination);temp=null;
+      fs.writeFileSync(path.join(parent,'pending.json'),JSON.stringify({commit:release.commit}));
       // Deliberately stage only: the TCP router owns live sockets. Replacing or
       // restarting that process cannot promise uninterrupted active connections.
       return {version:release.version,commit:release.commit,staged:true,restartRequired:true,message:'نسخه دریافت و بررسی شد؛ برای حفظ اتصال‌های فعال هنوز اعمال نشده است.'};
@@ -65,10 +68,9 @@ module.exports = function updater(root = __dirname, fetch = get) {
   function stagedRelease() {
     const parent=path.join(root,'.mf-updates');
     if(!fs.existsSync(parent)) throw Error('ابتدا Check for update را اجرا کنید');
-    const releases=fs.readdirSync(parent,{withFileTypes:true}).filter(x=>x.isDirectory()&&x.name!=='download').map(x=>x.name);
-    if(!releases.length) throw Error('نسخهٔ آماده‌ای وجود ندارد');
-    releases.sort();
-    const dir=path.join(parent,releases[releases.length-1]);
+    const pending=JSON.parse(fs.readFileSync(path.join(parent,'pending.json'),'utf8'));
+    if(!/^[a-f0-9]{40}$/.test(pending.commit))throw Error('Invalid pending update');
+    const dir=path.join(parent,pending.commit);
     const release=JSON.parse(fs.readFileSync(path.join(dir,'release.json'),'utf8'));
     return {dir,release};
   }

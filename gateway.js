@@ -10,6 +10,7 @@ module.exports = function createGateway(deps) {
   let nodeCookie = '';
   let configureChain = Promise.resolve();
   const updater = require('./updater')();
+  const metrics = require('./metrics')(process.env.KATABUMP_ROOT || (fs.existsSync('/home/container') ? '/home/container' : process.cwd()));
   function load() {
     if (settings) return settings;
     try { settings = JSON.parse(fs.readFileSync(file, 'utf8')); }
@@ -186,11 +187,12 @@ module.exports = function createGateway(deps) {
     const url = new URL(req.url, 'http://localhost');
     if (url.pathname === '/mf/admin.js') {
       res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-cache' });
-      return res.end(fs.readFileSync(path.join(__dirname, 'admin.js')));
+      return res.end(deps.adminSource || fs.readFileSync(path.join(__dirname, 'admin.js')));
     }
     if (url.pathname.startsWith('/node/')) return node(req, res, url);
     if (url.pathname.startsWith('/mf/')) {
       const cookie = await admin(req);
+      if (req.method === 'GET' && url.pathname === '/mf/metrics') return json(res,200,{success:true,metrics:metrics()});
       if (req.method === 'GET' && url.pathname === '/mf/update/check') return json(res, 200, { success: true, ...await updater.check() });
       if (req.method === 'GET' && url.pathname === '/mf/xray/versions') return json(res, 200, { success: true, versions: await xrayVersions(cookie) });
       if (req.method === 'GET' && url.pathname === '/mf/xray/status') {

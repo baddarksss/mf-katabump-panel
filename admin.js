@@ -1,6 +1,8 @@
 /* Administrator controls, injected into the native vpn-ui panel. */
 (() => {
   'use strict';
+  let containerMetrics;
+  window.mfContainerStatus = data => Object.assign({},data,containerMetrics || {cpu:null,mem:{current:null,total:null},swap:{current:null,total:null},disk:{current:null,total:null},loads:[]});
   async function request(route, data) {
     const response = await fetch('/mf/' + route, data === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
     const result = await response.json();
@@ -17,6 +19,12 @@
     document.body.appendChild(box);
     const field = box.querySelector('#mf-origin'); field.value = status.origin || location.origin;
     const result = box.querySelector('#mf-result');
+    const metricsNote=document.createElement('p');box.appendChild(metricsNote);
+    async function refreshMetrics(){
+      try {containerMetrics=(await request('metrics')).metrics;metricsNote.textContent='System Status: کانتینر؛ دیسک: پوشه سرور؛ Uptime: اجرای پنل.'+(containerMetrics.missing.length?' داده ناموجود: '+containerMetrics.missing.join(', '):'');}
+      catch {containerMetrics=null;metricsNote.textContent='آمار کانتینر در دسترس نیست.';}
+    }
+    await refreshMetrics();setInterval(refreshMetrics,2000);
     const update = document.createElement('button');
     update.textContent = 'Check for update — GitHub';
     box.appendChild(update);
@@ -31,16 +39,11 @@
       } else result.textContent = 'نسخه دریافت و آماده شد؛ هنوز اعمال نشد.';
     }); };
     const xray = document.createElement('button');
-    xray.textContent = 'Update Xray';
+    xray.textContent = 'نسخه Xray (قفل‌شده توسط vpn-ui)';
     box.appendChild(xray);
     xray.onclick = function () { run(this, async () => {
-      const versions = await request('xray/versions');
-      const list = Array.isArray(versions.versions) ? versions.versions : (versions.versions?.versions || versions.versions?.obj || []);
       const current = (await request('xray/status')).status || {};
-      const selected = prompt('نسخه Xray را وارد کنید. نسخه فعلی: ' + (current.xrayVersion || current.version || 'نامشخص') + '\nنسخه‌های قابل نصب: ' + list.join(', '), list[list.length - 1] || '');
-      if (!selected) return;
-      const resultXray = await request('xray/install', { version: selected });
-      result.textContent = resultXray.message;
+      result.textContent='Xray: '+(current.xray?.version || 'نامشخص')+' — هسته vpn-ui 1.9.4 تعویض مستقل Xray را مسدود کرده است.';
     }); };
     // Capture the stock update action before Vue invokes the binary updater.
     document.addEventListener('click', event => {

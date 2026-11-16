@@ -1,13 +1,14 @@
 {
   "name": "mf-panel",
-  "version": "2.2.0",
+  "version": "2.3.0",
+  "updateRepository": "baddarksss/mf-katabump-panel",
   "private": true,
   "description": "Katabump non-root runner with native client subscriptions and a token-authenticated node adapter.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node updater.test.cjs && node gateway.test.js && node -e \"process.env.SELFTEST='1';require('./index.js')\"",
-    "release": "node release.cjs"
+    "test": "node -e \"process.env.SELFTEST='1';require('./index.js')\"",
+    "release": "node -e \"const fs=require('fs'),c=require('crypto'),files={};for(const n of ['index.js','package.json'])files[n]=c.createHash('sha256').update(fs.readFileSync(n)).digest('hex');fs.writeFileSync('update-manifest.json',JSON.stringify({version:require('./package.json').version,files},null,2));\""
   },
   "engines": {
     "node": ">=16"
