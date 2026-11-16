@@ -1,10 +1,7 @@
 {
-  "version": "2.3.0",
+  "version": "2.3.1",
   "files": {
-    "index.js": "0809b9822d7c46ddb12424dff5d66c4bd14a26ce048bbfbbd1a1baa00bda0d06",
-    "package.json": "c146605d23bc0a0ff3a31aa58d18d245d3df9efac47416cba409690171322f8b",
-    "gateway.js": "d19643d91fdced4f71472a15460773c51611c151280c81837280d360f29bb644",
-    "admin.js": "1c1472a974c599e2c54efef08995d18da217adead5fcac9f7ce8bb81624444a9",
-    "updater.js": "7914fb006b916662850470c304a579eea270f82f50e52f11a2862fcbd6ec247f"
+    "index.js": "0fb93356b5301d55231da55c048fb2ca61532f6b683060fc5871f20ee6d74ac7",
+    "package.json": "3aee5bda4cbf247e129e2203c4e6bdb1c38190cfe9aac7fa8aa0d89bdc94eb39"
   }
 }

@@ -1,6 +1,0 @@
-vpn/
-.mf-updates/
-node_modules/
-*.zip
-*.bak
-.env
