@@ -17,8 +17,14 @@ const zlib = require("zlib");
 const { spawn, spawnSync } = require("child_process");
 
 const VERSION = (() => {
-  try { return String(require("./package.json").version || "").trim() || "2.3.2"; }
-  catch (e) { return "2.3.2"; }
+  // Read the file instead of require(): the in-process update must see the new
+  // version immediately, and require() would serve the cached one.
+  try {
+    const fs = require("fs");
+    const path = require("path");
+    const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, "package.json"), "utf8"));
+    return String(pkg.version || "").trim() || "0.0.0";
+  } catch (e) { return "0.0.0"; }
 })();
 const BRAND = "M&F Panel";
 
@@ -1634,7 +1640,9 @@ async function reloadInPlace() {
   if (child) { try { child.kill("SIGKILL"); } catch (e) {} }
   await sleep(400);
   try {
-    delete require.cache[__filename];
+    // Drop every cached module: index.js plus package.json, otherwise the new
+    // copy reports the previous version it has already read.
+    for (const key of Object.keys(require.cache)) delete require.cache[key];
     require(__filename);
   } catch (e) {
     log("اجرای نسخهٔ جدید در همین پروسه ممکن نشد: " + e.message);
