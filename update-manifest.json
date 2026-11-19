@@ -1,7 +1,7 @@
 {
-  "version": "2.4.1",
+  "version": "2.4.2",
   "files": {
-    "index.js": "6194621457adbdd2988e04c0cdef75b73af54b8563f6cc5d6fe1b2bff4a1aa86",
-    "package.json": "285d9b2fe084688884013369e6f2b625dfb2baafa17826fb49b9afe7778bd0ca"
+    "index.js": "984863edb126139e25d5222aee723d45c205ff483dcbdcad322cddb2441150e4",
+    "package.json": "ee2b248902e2b784062343e0bacd0b9506569c04d69c45b3cc6e06c3c7bad6af"
   }
 }

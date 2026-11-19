@@ -1,6 +1,6 @@
 {
   "name": "mf-panel",
-  "version": "2.4.1",
+  "version": "2.4.2",
   "updateRepository": "baddarksss/mf-katabump-panel",
   "private": true,
   "description": "Katabump non-root runner with native client subscriptions and a token-authenticated node adapter.",
